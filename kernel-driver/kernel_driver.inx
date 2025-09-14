@@ -1,0 +1,58 @@
+[Version]
+Signature   = "$WINDOWS NT$"
+Class       = TestRustDevice
+ClassGuid   = {51463437-3223-4df0-82f8-0f0ea8e21519}
+Provider    = %ProviderString%
+PnpLockDown = 1
+
+[DestinationDirs]
+DefaultDestDir = 13
+
+[SourceDisksNames]
+1 = %DiskId1%,,,""
+
+[SourceDisksFiles]
+kernel_driver.sys = 1,,
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+; ================= Install section =================
+
+[Manufacturer]
+%StdMfg%=Standard,NT$ARCH$.10.0...16299
+
+[Standard.NT$ARCH$.10.0...16299]
+%DeviceDesc%=SampleKMDFDevice, root\SAMPLE_KMDF_HW_ID
+
+[SampleKMDFDevice.NT$ARCH$]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+kernel_driver.sys
+
+; ================= Service installation =================
+[SampleKMDFDevice.NT$ARCH$.Services]
+AddService = SampleKMDFService, %SPSVCINST_ASSOCSERVICE%, Sample_KMDF_Service_Install
+
+[Sample_KMDF_Service_Install]
+DisplayName    = %ServiceDesc%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START 
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %13%\kernel_driver.sys
+
+[Strings]
+SPSVCINST_ASSOCSERVICE = 0x00000002
+ProviderString         = "JozefPodlecki"
+StdMfg                 = "(Standard system devices)"
+DiskId1                = "Sample KMDF Installation Disk #1"
+DeviceDesc             = "TestRustDevice"
+ServiceDesc            = "TestRustDevice"
+ClassName              = "TestRustDevice"

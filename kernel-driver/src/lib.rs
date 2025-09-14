@@ -1,12 +1,19 @@
 #![no_std]
-#![feature(alloc_error_handler)]
-#![feature(allocator_api)]
+
+extern crate alloc;
 
 use wdk_sys::{
    PDRIVER_OBJECT,
    NTSTATUS,
    PCUNICODE_STRING,
 };
+
+use alloc::{
+    ffi::CString,
+    slice,
+    string::String,
+};
+use wdk_sys::ntddk::DbgPrint;
 
 #[cfg(not(test))]
 extern crate wdk_panic;
@@ -18,10 +25,17 @@ use wdk_alloc::WdkAllocator;
 #[global_allocator]
 static GLOBAL_ALLOCATOR: WdkAllocator = WdkAllocator;
 
-#[export_name = "DriverEntry"]
+#[unsafe(export_name = "DriverEntry")]
 pub unsafe extern "system" fn driver_entry(
    driver: PDRIVER_OBJECT,
    registry_path: PCUNICODE_STRING,
 ) -> NTSTATUS {
+   let string = CString::new("Hello World!\n").unwrap();
+
+
+    unsafe {
+        DbgPrint(c"%s".as_ptr().cast(), string.as_ptr());
+    }
+
    0
 }
