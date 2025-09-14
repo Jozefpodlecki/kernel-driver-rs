@@ -1,77 +1,13 @@
-[env.development]
-TARGET_PATH = "target/x86_64-pc-windows-msvc/debug"
+extend = "target/rust-driver-makefile.toml"
 
-[env.production]
-TARGET_PATH = "target/x86_64-pc-windows-msvc/release"
-BUILD_FLAGS = "--release"
+[config]
+load_script = '''
+#!@rust
+//! ```cargo
+//! [dependencies]
+//! wdk-build = "0.4.0"
+//! ```
+#![allow(unused_doc_comments)]
 
-[tasks.build-driver]
-script = [
-    "cargo b %BUILD_FLAGS%"
-]
-
-[tasks.rename]
-dependencies = ["build-driver"]
-ignore_errors = true
-script = [
-    "cd %TARGET_PATH%",
-    "rename kernel_driver.dll kernel_driver.sys",
-]
-
-[tasks.sign]
-dependencies = ["build-driver", "rename"]
-script_runner = "powershell"
-script_extension = "ps1"
-script = [
+wdk_build::cargo_make::load_rust_driver_makefile()?
 '''
-    & "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
-
-    $certName = "CN=DriverCertificate"
-    $certStore = "Cert:\CurrentUser\My"
-    $certPath = Join-Path $certStore $certName
-    $cerFile = ".\DriverCertificate.cer"
-    $pfxFile = ".\DriverCertificate.pfx"
-
-    # Check if cert exists in the store
-    $cert = Get-ChildItem $certStore | Where-Object { $_.Subject -eq $certName }
-
-    if (-not $cert) {
-        Write-Host "Creating new self-signed certificate..."
-        $cert = New-SelfSignedCertificate -Type CodeSigningCert `
-            -Subject $certName `
-            -CertStoreLocation $certStore
-
-        # Export to .cer
-        Export-Certificate -Cert $cert -FilePath $cerFile | Out-Null
-
-        # Export to .pfx (optional, requires password)
-        $pwd = ConvertTo-SecureString -String "password123" -Force -AsPlainText
-        Export-PfxCertificate -Cert $cert -FilePath $pfxFile -Password $pwd | Out-Null
-    }
-    else {
-        Write-Host "Certificate already exists in store."
-    }
-
-    $BasePath = Get-Location
-    $TargetPath = Join-Path $BasePath "target\x86_64-pc-windows-msvc\debug\kernel_driver.sys"
-    $signtoolPath = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x86\signtool.exe"
-
-    & $signtoolPath sign `
-    /a `
-    /v `
-    /fd SHA256 `
-    /s My `
-    /n "DriverCertificate" `
-    /t http://timestamp.digicert.com `
-    $TargetPath
-'''
-]
-
-[tasks.verify]
-dependencies = ["build-driver", "rename"]
-script_runner = "powershell"
-script_extension = "ps1"
-script = [
-'''
-'''
-]
