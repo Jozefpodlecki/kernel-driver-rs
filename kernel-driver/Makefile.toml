@@ -1,5 +1,8 @@
 extend = "target/rust-driver-makefile.toml"
 
+[env]
+WDK_BUILD_ENABLE_SIGNTOOL_VERIFY = "true"
+
 [config]
 load_script = '''
 #!@rust

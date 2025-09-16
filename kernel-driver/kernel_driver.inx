@@ -6,6 +6,7 @@ Provider    = %ProviderString%
 PnpLockDown = 1
 
 [DestinationDirs]
+; %SystemRoot%\System32\DriverStore\FileRepository,  %SystemRoot%\Inf
 DefaultDestDir = 13
 
 [SourceDisksNames]
@@ -54,5 +55,5 @@ ProviderString         = "JozefPodlecki"
 StdMfg                 = "(Standard system devices)"
 DiskId1                = "Sample KMDF Installation Disk #1"
 DeviceDesc             = "TestRustDevice"
-ServiceDesc            = "TestRustDevice"
+ServiceDesc            = "TestRustService"
 ClassName              = "TestRustDevice"
