@@ -1,0 +1,1 @@
+pnputil /delete-driver oem115.inf /uninstall /force
